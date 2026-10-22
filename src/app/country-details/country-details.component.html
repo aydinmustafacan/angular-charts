@@ -1,0 +1,44 @@
+<header>
+  <div>
+    <p class="eyebrow">{{ code() }}</p>
+    <h2 data-testid="details-title">{{ displayName() }}</h2>
+  </div>
+  <button type="button" class="close" aria-label="Close details" (click)="closed.emit()">✕</button>
+</header>
+
+@if (country(); as c) {
+  <section class="headline">
+    <div class="score">
+      <span class="score-value" data-testid="details-score">{{ c.score }}</span>
+      <span class="score-max">/100 score</span>
+    </div>
+    <div class="score-track" aria-hidden="true">
+      <div class="score-fill" [style.width.%]="c.score" [style.background]="scoreColor()"></div>
+    </div>
+    @if (status(); as s) {
+      <span class="status" data-testid="details-status">
+        <span class="status-icon" [style.background]="s.color" aria-hidden="true">{{
+          s.icon
+        }}</span>
+        {{ s.label }}
+      </span>
+    }
+  </section>
+
+  @if (c.summary) {
+    <p class="summary">{{ c.summary }}</p>
+  }
+
+  <dl class="metrics">
+    @for (row of rows(); track row.label) {
+      <div class="metric">
+        <dt>{{ row.label }}</dt>
+        <dd>{{ row.value }}</dd>
+      </div>
+    }
+  </dl>
+} @else {
+  <p class="empty" data-testid="details-empty">
+    No metrics are available for {{ displayName() }} yet.
+  </p>
+}

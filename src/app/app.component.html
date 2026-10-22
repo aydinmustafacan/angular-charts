@@ -1,0 +1,88 @@
+<header class="page-header">
+  <div>
+    <h1>Global Country Scores</h1>
+    <p class="subtitle">Hover a country for a summary, click it for full details.</p>
+  </div>
+
+  @if (dataset.hasValue()) {
+    <label class="picker">
+      <span>Country</span>
+      <select
+        data-testid="country-picker"
+        [value]="selectedCode() ?? ''"
+        (change)="onPickerChange($event)"
+      >
+        <option value="">Select a country…</option>
+        @for (option of countryOptions(); track option.code) {
+          <option [value]="option.code">{{ option.name }}</option>
+        }
+      </select>
+    </label>
+  }
+</header>
+
+<main>
+  @if (dataset.isLoading()) {
+    <div class="state" role="status" data-testid="loading-state">
+      <span class="spinner" aria-hidden="true"></span>
+      Loading map data…
+    </div>
+  } @else if (dataset.error()) {
+    <div class="state state-error" role="alert" data-testid="error-state">
+      <p><strong>The map could not be loaded.</strong></p>
+      <p class="muted">Check your connection and try again.</p>
+      <button type="button" (click)="dataset.reload()">Retry</button>
+    </div>
+  } @else if (dataset.hasValue()) {
+    <div class="layout" [class.has-selection]="selectedCode()">
+      <section class="map-card" aria-label="World map">
+        @if (countries().size === 0) {
+          <p class="notice" data-testid="missing-data-notice">
+            No country metrics are available. Showing geography only.
+          </p>
+        }
+
+        <div class="map-frame">
+          <app-world-map
+            [geoJson]="dataset.value().geoJson"
+            [regions]="regions()"
+            [selectedCode]="selectedCode()"
+            [noDataColor]="noDataColor"
+            ariaLabel="World map coloured by country score"
+            (countrySelected)="onCountrySelected($event)"
+          >
+            <ng-template appMapTooltip let-code let-name="name">
+              <app-country-tooltip [name]="name" [country]="countries().get(code)" />
+            </ng-template>
+          </app-world-map>
+        </div>
+
+        <ul class="legend" aria-label="Score legend">
+          @for (bucket of legend; track bucket.label) {
+            <li>
+              <span class="swatch" [style.background]="bucket.color"></span>{{ bucket.label }}
+            </li>
+          }
+          <li><span class="swatch" [style.background]="noDataColor"></span>No data</li>
+        </ul>
+
+        @if (unmatchedCodes().length > 0) {
+          <p class="footnote">
+            Not shown on the map (no geometry at this scale): {{ unmatchedCodes().join(', ') }}
+          </p>
+        }
+      </section>
+
+      @if (selectedCode(); as code) {
+        <app-country-details
+          class="details"
+          data-testid="country-details"
+          [code]="code"
+          [country]="selectedCountry()"
+          [fallbackName]="selectedName()"
+          (closed)="closeDetails()"
+        />
+      }
+    </div>
+  }
+</main>

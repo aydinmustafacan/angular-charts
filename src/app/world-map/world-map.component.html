@@ -1,0 +1,33 @@
+<div
+  class="chart"
+  echarts
+  role="img"
+  [attr.aria-label]="ariaLabel()"
+  [options]="options()"
+  [initOpts]="initOpts"
+  (chartClick)="onClick($event)"
+  (chartMouseOver)="onPointerMove($event)"
+  (chartMouseMove)="onPointerMove($event)"
+  (chartMouseOut)="clearPointer()"
+  (chartGlobalOut)="clearPointer()"
+></div>
+
+@if (tooltipContext(); as context) {
+  @if (tooltipPlacement(); as placement) {
+    <div
+      class="tooltip"
+      role="tooltip"
+      data-testid="map-tooltip"
+      [class.flip-x]="placement.flipX"
+      [class.flip-y]="placement.flipY"
+      [style.left.px]="placement.left"
+      [style.top.px]="placement.top"
+    >
+      @if (tooltip(); as custom) {
+        <ng-container *ngTemplateOutlet="custom.template; context: context" />
+      } @else {
+        <span class="default-tooltip">{{ context.name }}</span>
+      }
+    </div>
+  }
+}
